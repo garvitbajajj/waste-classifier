@@ -36,7 +36,7 @@ python train.py --name effb0_own --arch efficientnet_b0 --extra data/own_train
 python evaluate.py runs/effb0/best.pt data/test data/real_test
 
 # 4. Demo
-CKPT=runs/effb0_own/best.pt python app.py
+python app.py runs/effb0_own/best.pt
 ```
 
 ## Datasets

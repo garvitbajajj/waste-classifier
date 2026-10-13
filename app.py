@@ -1,15 +1,15 @@
 """Gradio demo: photo -> material -> bin.
 
-  CKPT=runs/effb0/best.pt python app.py
+  python app.py runs/effb0/best.pt      (defaults to ./best.pt, e.g. on Hugging Face Spaces)
 """
-import os
+import sys
 
 import gradio as gr
 import torch
 
 from common import BIN, CLASSES, load
 
-model, tf = load(os.environ.get("CKPT", "best.pt"))
+model, tf = load(sys.argv[1] if len(sys.argv) > 1 else "best.pt")
 THRESHOLD = 0.6  # below this the app admits it is unsure instead of guessing
 
 
