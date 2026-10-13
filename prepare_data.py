@@ -28,7 +28,9 @@ IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 def dhash(path):
     """64-bit difference hash: survives resizing and re-compression."""
-    px = Image.open(path).convert("L").resize((9, 8)).tobytes()
+    im = Image.open(path)
+    im.draft("L", (64, 64))  # JPEGs decode at a fraction of full size: much faster on big photos
+    px = im.convert("L").resize((9, 8)).tobytes()
     return sum(1 << i for i in range(64) if px[i + i // 8] > px[i + i // 8 + 1])
 
 
@@ -39,9 +41,11 @@ def label_for(parts):
 
 def collect(raw):
     public, own, seen, unknown = defaultdict(list), defaultdict(list), set(), Counter()
-    for p in sorted(raw.rglob("*")):
-        if p.suffix.lower() not in IMAGE_EXT or p.parent == raw:
-            continue
+    paths = [p for p in sorted(raw.rglob("*")) if p.suffix.lower() in IMAGE_EXT and p.parent != raw]
+    print(f"found {len(paths)} images under {raw}", flush=True)
+    for i, p in enumerate(paths, 1):
+        if i % 1000 == 0:
+            print(f"  hashed {i}/{len(paths)}", flush=True)
         dataset, *folders = p.relative_to(raw).parts[:-1]
         label = label_for(folders)
         if label is None:
