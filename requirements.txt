@@ -1,0 +1,8 @@
+torch
+torchvision>=0.18
+timm
+scikit-learn
+matplotlib
+pillow
+gradio
+# optional: wandb (for --wandb)

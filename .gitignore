@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+raw/
+data/
+runs/
+wandb/
+*.pt
