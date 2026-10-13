@@ -68,6 +68,7 @@ def main():
     # Rare classes (battery, medical) get a bigger say in the loss.
     counts = torch.bincount(torch.tensor([y for d in train.datasets for y in d.targets]), minlength=len(CLASSES))
     weights = counts.sum() / (len(CLASSES) * counts.clamp(min=1))
+    weights[counts == 0] = 0  # absent class: label smoothing would otherwise push every prediction towards it
     loss_fn = nn.CrossEntropyLoss(weight=weights.float().to(device), label_smoothing=0.1)
 
     # Pretrained: train the new head first, then fine-tune everything with a 10x smaller backbone LR.
