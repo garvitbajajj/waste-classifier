@@ -16,6 +16,8 @@ The model is trained on materials, not bins, because materials stay the same eve
 | Zero-shot vision LLM | — | | | | |
 
 - ImageNet pretraining adds about 31 macro-F1 points with the same data and the same 15 epochs.
+- EfficientNet-B0: 4.0M parameters, 16 MB checkpoint, about 34 ms per image on a laptop CPU.
+- Main confusions are glass ↔ plastic ↔ metal (transparent and shiny items). Only 1 of 94 test batteries went to the wrong bin (predicted as metal).
 - Bin accuracy is higher than material accuracy because most mistakes stay within one bin (for example paper vs cardboard).
 - `test` is a held-out split of the public data. `real_test` is photos I took myself and never trained on. The gap between those two columns is the domain-shift result.
 
