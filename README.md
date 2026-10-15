@@ -27,7 +27,7 @@ The model is trained on materials, not bins, because materials stay the same eve
 pip install -r requirements.txt
 
 # 1. Data: put downloaded datasets under raw/<name>/ as they unzip, and your own photos under raw/own/<material>/
-python prepare_data.py            # dedupes, remaps labels, splits -> data/
+python prepare_data.py            # dedupes, remaps labels, splits -> data/  (--raw accepts several folders)
 python test_prepare.py            # self-check for the merge/split logic
 
 # 2. Train (on a free Kaggle/Colab GPU)

@@ -39,17 +39,18 @@ def label_for(parts):
     return next((REMAP[p.lower()] for p in reversed(parts) if p.lower() in REMAP), None)
 
 
-def collect(raw):
+def collect(raws):
     public, own, seen, unknown = defaultdict(list), defaultdict(list), set(), Counter()
-    paths = [p for p in sorted(raw.rglob("*")) if p.suffix.lower() in IMAGE_EXT and p.parent != raw]
-    print(f"found {len(paths)} images under {raw}", flush=True)
-    for i, p in enumerate(paths, 1):
+    paths = [(raw, p) for raw in raws for p in sorted(raw.rglob("*"))
+             if p.suffix.lower() in IMAGE_EXT and p.parent != raw]
+    print(f"found {len(paths)} images under {', '.join(map(str, raws))}", flush=True)
+    for i, (raw, p) in enumerate(paths, 1):
         if i % 1000 == 0:
             print(f"  hashed {i}/{len(paths)}", flush=True)
         dataset, *folders = p.relative_to(raw).parts[:-1]
         label = label_for(folders)
         if label is None:
-            unknown[p.parent.relative_to(raw).as_posix()] += 1
+            unknown[p.parent.as_posix()] += 1
             continue
         try:
             h = dhash(p)
@@ -71,7 +72,7 @@ def write(items, out):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--raw", default="raw", type=Path)
+    ap.add_argument("--raw", nargs="+", default=[Path("raw")], type=Path, help="one or more source folders")
     ap.add_argument("--out", default="data", type=Path)
     ap.add_argument("--val", default=0.1, type=float)
     ap.add_argument("--test", default=0.1, type=float)
