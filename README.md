@@ -5,17 +5,19 @@ The model is trained on materials, not bins, because materials stay the same eve
 
 ## Results
 
-_Fill in from `evaluate.py` once you have your own numbers._
+15 epochs each on a Kaggle T4. Data: Garbage Classification (12 classes), 15,515 images, 15,318 after removing 197 duplicates, split 80/10/10 per class.
 
-| Model | Trained on | test macro-F1 | **real_test macro-F1** | real_test bin acc | hazardous recall | size |
-|---|---|---|---|---|---|---|
-| ResNet-18 from scratch | public | | | | | |
-| MobileNetV3 | public | | | | | |
-| EfficientNet-B0 | public | | | | | |
-| EfficientNet-B0 | public + own photos | | | | | |
-| Zero-shot vision LLM | — | | | | | — |
+| Model | Trained on | test macro-F1 | test bin acc | test hazardous recall | **real_test macro-F1** |
+|---|---|---|---|---|---|
+| ResNet-18 from scratch | public | 0.651 | 0.885 | 0.830 | |
+| MobileNetV3-Large | public | 0.949 | 0.985 | 0.968 | |
+| **EfficientNet-B0** | public | **0.962** | **0.989** | **0.989** | |
+| EfficientNet-B0 | public + own photos | | | | |
+| Zero-shot vision LLM | — | | | | |
 
-`test` is a held-out split of the public data. `real_test` is photos I took myself and never trained on. The gap between those two columns is the domain-shift result.
+- ImageNet pretraining adds about 31 macro-F1 points with the same data and the same 15 epochs.
+- Bin accuracy is higher than material accuracy because most mistakes stay within one bin (for example paper vs cardboard).
+- `test` is a held-out split of the public data. `real_test` is photos I took myself and never trained on. The gap between those two columns is the domain-shift result.
 
 ## Pipeline
 
