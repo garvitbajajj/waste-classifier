@@ -1,6 +1,7 @@
 """Gradio demo: photo -> material -> bin.
 
   python app.py runs/effb0/best.pt      (defaults to ./best.pt, e.g. on Hugging Face Spaces)
+  python app.py runs/effb0/best.pt --share   (temporary public https link, e.g. to try it on a phone)
 """
 import sys
 
@@ -9,7 +10,8 @@ import torch
 
 from common import BIN, CLASSES, load
 
-model, tf = load(sys.argv[1] if len(sys.argv) > 1 else "best.pt")
+args = [a for a in sys.argv[1:] if a != "--share"]
+model, tf = load(args[0] if args else "best.pt")
 THRESHOLD = 0.6  # below this the app admits it is unsure instead of guessing
 
 
@@ -36,4 +38,4 @@ demo = gr.Interface(
 )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share="--share" in sys.argv)
