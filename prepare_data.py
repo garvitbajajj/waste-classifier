@@ -1,10 +1,11 @@
 """Merge public waste datasets into one material-labelled ImageFolder layout.
 
   raw/<any dataset>/**/<class folder>/**/*.jpg  ->  data/{train,val,test}/<material>/
-  raw/own/<material>/*.jpg                      ->  data/{own_train,real_test}/<material>/
+  raw/**/own/<material>/*.jpg                   ->  data/{own_train,real_test}/<material>/
 
 Duplicates (same perceptual hash) are dropped across *all* sources before splitting,
-so the same picture can never sit in both train and test.
+so the same picture can never sit in both train and test. Images are saved upright
+(phone EXIF rotation applied) and shrunk to MAX_SIDE, which makes training epochs much faster.
 """
 import argparse
 import random
@@ -12,9 +13,11 @@ import shutil
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from common import CLASSES
+
+MAX_SIDE = 384  # the model sees 224 px; storing small copies saves decoding time every epoch
 
 # Lower-cased folder names from TrashNet, Kaggle garbage-12, TrashBox, RealWaste -> material.
 REMAP = {c: c for c in CLASSES} | {
@@ -47,8 +50,8 @@ def collect(raws):
     for i, (raw, p) in enumerate(paths, 1):
         if i % 1000 == 0:
             print(f"  hashed {i}/{len(paths)}", flush=True)
-        dataset, *folders = p.relative_to(raw).parts[:-1]
-        label = label_for(folders)
+        folders = p.relative_to(raw).parts[:-1]
+        label = label_for(folders[1:])  # first folder is the dataset's own name
         if label is None:
             unknown[p.parent.as_posix()] += 1
             continue
@@ -60,14 +63,19 @@ def collect(raws):
         if h in seen:
             continue
         seen.add(h)
-        (own if dataset == "own" else public)[label].append((p, h))
+        # an "own" folder anywhere in the path, e.g. a Kaggle dataset /kaggle/input/<slug>/own/plastic/
+        (own if "own" in folders else public)[label].append((p, h))
     return public, own, unknown
 
 
 def write(items, out):
     out.mkdir(parents=True, exist_ok=True)
     for p, h in items:
-        shutil.copy2(p, out / f"{h:016x}{p.suffix.lower()}")
+        im = Image.open(p)
+        im.draft("RGB", (MAX_SIDE, MAX_SIDE))
+        im = ImageOps.exif_transpose(im).convert("RGB")  # phone photos are often stored sideways
+        im.thumbnail((MAX_SIDE, MAX_SIDE))
+        im.save(out / f"{h:016x}.jpg", quality=90)
 
 
 def main(argv=None):
